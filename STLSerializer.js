@@ -75,7 +75,6 @@ THREE.STLSerializer.prototype = {
       REAL32[3] – Vertex 3
       UINT16 – Attribute byte count
       end*/
-
       var blobData = []
       var buffer = new ArrayBuffer(4)
       var int32buffer = new Int32Array(buffer, 0, 1)
@@ -98,6 +97,8 @@ THREE.STLSerializer.prototype = {
       ar1[0] = numTriangles;
       blobData.push(ar1);
 
+      buffer = new ArrayBuffer(50);
+
 		  var i, j, mesh, geometry, face, matrix, position;
 		  var normal, vertex1, vertex2, vertex3;
 		  for (i = 0; i < meshes.length; i++) {
@@ -114,7 +115,7 @@ THREE.STLSerializer.prototype = {
 				  vertex1 = this.getTransformedPosition (geometry.vertices[face.a], matrix, position);
 				  vertex2 = this.getTransformedPosition (geometry.vertices[face.b], matrix, position);
 				  vertex3 = this.getTransformedPosition (geometry.vertices[face.c], matrix, position);
-          var vertexDataArray = new Float32Array(12);
+          var vertexDataArray = new Float32Array(buffer, 0, 12);
           normal = face.normal
           vertexDataArray[0] = normal.x
           vertexDataArray[1] = normal.y
@@ -127,7 +128,7 @@ THREE.STLSerializer.prototype = {
             vertexDataArray[4+v] = vertices[v].y
             vertexDataArray[5+v] = vertices[v].z
           }
-          var attribDataArray = new Uint16Array(1);
+          var attribDataArray = new Uint16Array(buffer, 48, 1);
           attribDataArray[0] = 0; 
               
           blobData.push(vertexDataArray)
@@ -136,7 +137,7 @@ THREE.STLSerializer.prototype = {
 		}
 
     ar1[0] = numTriangles;
-		return buffer;
+		return blobData;
 	},
 
 	clearContent : function ()
