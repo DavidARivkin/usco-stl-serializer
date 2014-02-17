@@ -14,31 +14,27 @@ THREE.STLSerializer.prototype = {
 
   serialize: function( rootElement, type ){
     this.outputType = type || "ascii";    
-    var meshes = [];
-
-    if( rootElement instanceof THREE.Mesh )
-    {
-      meshes.push ( rootElement );
-      return this.exportMeshes (meshes);
-    }else
-    {
-      return this.exportScene ( rootElement );
-    }
+    this.clearContent();
+    return this.exportScene (rootElement);
   },
 
 	exportScene : function (scene) {
 		var current;
+    var meshes = [];
 		scene.traverse (function (current) {
 			if (current instanceof THREE.Mesh) {
 				meshes.push (current);
 			}
 		});
-
-		return this.exportMeshes (meshes);
-	},
-
-	exportMesh : function (mesh) {
-		return this.exportMeshes ([mesh]);
+    if(this.outputType=="ascii")
+    {
+      console.log("exporting ascii", meshes.length);
+		  return this.exportMeshes ( meshes );
+    }
+    else if(this.outputType=="binary")
+    {
+      return this.exportMeshesBinary (meshes);
+    }
 	},
 
 	exportMeshes : function (meshes) {
@@ -62,9 +58,85 @@ THREE.STLSerializer.prototype = {
 				this.addTriangleToContent (normal, vertex1, vertex2, vertex3);
 			}
 		};
-
+    console.log("gne");
 		this.addLineToContent ('endsolid exported');
 		return this.stlContent;
+	},
+
+  exportMeshesBinary:function (meshes) { 
+    /*binary stl structure:
+      UINT8[80] – Header
+      UINT32 – Number of triangles
+
+      foreach triangle
+      REAL32[3] – Normal vector
+      REAL32[3] – Vertex 1
+      REAL32[3] – Vertex 2
+      REAL32[3] – Vertex 3
+      UINT16 – Attribute byte count
+      end*/
+
+      var blobData = []
+      var buffer = new ArrayBuffer(4)
+      var int32buffer = new Int32Array(buffer, 0, 1)
+      var int8buffer = new Int8Array(buffer, 0, 4)
+      int32buffer[0] = 0x11223344
+      if(int8buffer[0] != 0x44)
+      {
+        throw new Error("Binary STL output is currently only supported on little-endian processors")
+      }
+
+      var numTriangles = 0;
+
+      var headerarray = new Uint8Array(80);
+      for(var i=0;i< 80;i++)
+      {
+        headerarray[i] = 65;
+      }
+      blobData.push(headerarray);
+      var ar1 = new Uint32Array(1);
+      ar1[0] = numTriangles;
+      blobData.push(ar1);
+
+		  var i, j, mesh, geometry, face, matrix, position;
+		  var normal, vertex1, vertex2, vertex3;
+		  for (i = 0; i < meshes.length; i++) {
+			  mesh = meshes[i];
+
+			  geometry = mesh.geometry;
+			  matrix = mesh.matrix;
+			  position = mesh.position;
+        numTriangles += geometry.faces.length;
+
+        for (j = 0; j < geometry.faces.length; j++) {
+				  face = geometry.faces[j];
+				  normal = face.normal;
+				  vertex1 = this.getTransformedPosition (geometry.vertices[face.a], matrix, position);
+				  vertex2 = this.getTransformedPosition (geometry.vertices[face.b], matrix, position);
+				  vertex3 = this.getTransformedPosition (geometry.vertices[face.c], matrix, position);
+          var vertexDataArray = new Float32Array(12);
+          normal = face.normal
+          vertexDataArray[0] = normal.x
+          vertexDataArray[1] = normal.y
+          vertexDataArray[2] = normal.z
+
+          var vertices = [vertex1,vertex2,vertex3];
+          for(var v = 0 ; v<3;v++)
+          {
+            vertexDataArray[3+v] = vertices[v].x
+            vertexDataArray[4+v] = vertices[v].y
+            vertexDataArray[5+v] = vertices[v].z
+          }
+          var attribDataArray = new Uint16Array(1);
+          attribDataArray[0] = 0; 
+              
+          blobData.push(vertexDataArray)
+          blobData.push(attribDataArray)
+			  }
+		}
+
+    ar1[0] = numTriangles;
+		return buffer;
 	},
 
 	clearContent : function ()
@@ -144,14 +216,42 @@ THREE.STLSerializer.prototype = {
     
     _generateBinary: function(geometry)
     {
-      var blobData = []
-      var buffer = new ArrayBuffer(4)
-      var int32buffer = new Int32Array(buffer, 0, 1)
-      var int8buffer = new Int8Array(buffer, 0, 4)
-      /*var int32buffer[0] = 0x11223344
-      if int8buffer[0] != 0x44
-        throw new Error("Binary STL output is currently only supported on little-endian (Intel) processors")
-        
+      
+      for (j = 0; j < geometry.faces.length; j++) {
+				face = geometry.faces[j];
+				normal = face.normal;
+				vertex1 = this.getTransformedPosition (geometry.vertices[face.a], matrix, position);
+				vertex2 = this.getTransformedPosition (geometry.vertices[face.b], matrix, position);
+				vertex3 = this.getTransformedPosition (geometry.vertices[face.c], matrix, position);
+				//this.addTriangleToContent (normal, vertex1, vertex2, vertex3);
+        var vertexDataArray = new Float32Array(12);
+        normal = face.normal
+        vertexDataArray[0] = normal.x
+        vertexDataArray[1] = normal.y
+        vertexDataArray[2] = normal.z
+
+        var vertices = [vertex1,vertex2,vertex3];
+        for(var v = 0 ; v<3;v++)
+        {
+          vertexDataArray[3+v] = vertices[v].x
+          vertexDataArray[4+v] = vertices[v].y
+          vertexDataArray[5+v] = vertices[v].z
+        }
+        var attribDataArray = new Uint16Array(1);
+        attribDataArray[0] = 0; 
+            
+        blobData.push(vertexDataArray)
+        blobData.push(attribDataArray)
+			}
+
+
+      /*geometry.faces.map(function(face)
+      {
+        var numvertices = face.vertices.length
+        thisnumtriangles = if numvertices >= 3 then numvertices-2 else 0 
+        numtriangles += thisnumtriangles 
+      });
+
       numtriangles=0
       @currentObject.faces.map (face) ->
         numvertices = face.vertices.length
@@ -189,7 +289,8 @@ THREE.STLSerializer.prototype = {
             
           blobData.push(vertexDataArray)
           blobData.push(attribDataArray)
-          */
+          
+      */  
       return blobData;
     }
 };

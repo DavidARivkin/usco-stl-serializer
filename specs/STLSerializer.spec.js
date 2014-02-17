@@ -13,13 +13,14 @@ describe("STL serializer tests", function() {
     expect(obsGeneratedSTL).toEqual(expGeneratedStl);
   });
 
-  /*it("can serialize to binary stl files", function() {
+  it("can serialize to binary stl files", function() {
     var object = new THREE.Mesh(new THREE.CubeGeometry(10,10,10),new THREE.MeshBasicMaterial);
 
     var obsGeneratedSTL = serializer.serialize(object, 'binary');
+    fs.writeFileSync("bla.stl",obsGeneratedSTL)
     var expGeneratedStl = fs.readFileSync("specs/data/cube_bin.stl", "binary");
-    expect(obsGeneratedSTL).toEqual(expGeneratedStl);
-  });*/
+    expect(obsGeneratedSTL).toEqual("");
+  });
 
   it("can serialize an object hierarchy to ascii stl files", function() {
     var object = new THREE.Mesh(new THREE.CubeGeometry(10,10,10),new THREE.MeshBasicMaterial);
