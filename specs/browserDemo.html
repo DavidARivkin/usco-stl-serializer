@@ -1,20 +1,50 @@
 <html>
   <head>
-    <title>UltiViewer example</title>
+    <title>Stl serializer example</title>
        <script type="text/javascript" src="three.min.js"></script>
-      <script src="../STLParser.js"></script>
+      <script src="../lib/STLSerializer.js"></script>
   </head>
 <body>
+  <a  id="downloadAscii">Download ascii</a>
+  <a  id="downloadBin">Download binary</a>
   <script>
-    function fetchData(uri)
+    function getWindowURL()
     {
-      var oReq = new XMLHttpRequest();
-      oReq.responseType = "arraybuffer";
-      //oReq.onload = displayData;
-      oReq.open("get", uri, true);
-      oReq.send();
+      if(window.URL)
+      {
+        return window.URL
+      }
+      else if( window.webkitURL){ return window.webkitURL;}
+      else {throw new Error("Your browser doesn't support window.URL");}
     }
-    fetchData("data/test.stl")
+
+    var object = new THREE.Mesh(new THREE.CubeGeometry(10,10,10),new THREE.MeshBasicMaterial);
+    object.add( subObject );
+    /////////BINARY///////////////
+    var serializer = new STLSerializer();
+    var data = serializer.serialize(object, 'binary');
+
+    var blob = new Blob(data, {type: "application/sla"});
+    
+    var windowURL=getWindowURL();
+    var outputFileBlobUrl = windowURL.createObjectURL(blob);
+
+    var dlButton = document.querySelector("#downloadBin");
+    dlButton.setAttribute("download","test.stl");
+    dlButton.setAttribute("href",outputFileBlobUrl);
+
+
+    /////////ASCII////////////
+
+    var data = serializer.serialize(object, 'ascii');
+    var blob = new Blob([data], {type: "application/sla"});
+    var windowURL=getWindowURL();
+    var outputFileBlobUrl = windowURL.createObjectURL(blob);
+
+    var dlButton = document.querySelector("#downloadAscii");
+    dlButton.setAttribute("download","test.stl");
+    dlButton.setAttribute("href",outputFileBlobUrl);
+    
   </script>  
 </body>
 </html>
