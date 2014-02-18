@@ -122,8 +122,6 @@ THREE.STLSerializer.prototype = {
       ar1[0] = numTriangles;
       rawData.push(ar1);
 
-      buffer = new ArrayBuffer(50);
-
 		  var i, j, mesh, geometry, face, matrix, position;
 		  var normal, vertex1, vertex2, vertex3;
 		  for (i = 0; i < meshes.length; i++) {
