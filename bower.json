@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "usco-client-deps": "usco/usco-client-deps#master"
   },
   "ignore": [
     "specs/"

@@ -1,0 +1,20 @@
+<link rel="import" href="../polymer/polymer.html">
+<script src="lib/stl-serializer.js"></script>
+
+<polymer-element name="stl-serializer" attributes="">
+  <script>
+    Polymer("stl-serializer",{
+      serializer : null,
+      created:function()
+      { 
+        STLSerializer = require( "stl-serializer" );
+        this.serializer = new STLSerializer();
+      },
+      //public api
+      serialize:function(rootElement, binary)
+      {
+        return this.serializer.serialize( rootElement, binary );
+      } 
+    });
+  </script>
+</polymer>

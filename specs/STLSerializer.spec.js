@@ -1,5 +1,5 @@
 THREE = require("three");
-STLSerializer = require("../STLSerializer");
+STLSerializer = require("../stl-serializer");
 fs = require("fs");
 
 writeToFile = require("./bufferArrayWriter");
