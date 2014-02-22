@@ -4,12 +4,15 @@
  */
 var detectEnv = require("composite-detect");
 
-THREE.STLSerializer = function () {
+if(detectEnv.isModule) var THREE = require("three");
+
+
+STLSerializer = function () {
   this.outputType = "ascii"; //ascii or binary
 };
 
-THREE.STLSerializer.prototype = {
-	constructor: THREE.STLSerializer,
+STLSerializer.prototype = {
+	constructor: STLSerializer,
 
   serialize: function( rootElement, type ){
     this.outputType = type || "ascii";    
@@ -206,4 +209,4 @@ THREE.STLSerializer.prototype = {
     },
 };
    
-if (detectEnv.isModule) module.exports = THREE.STLSerializer;
+if (detectEnv.isModule) module.exports = STLSerializer;
