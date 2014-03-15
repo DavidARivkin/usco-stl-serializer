@@ -6,6 +6,7 @@
     "usco-client-deps": "usco/usco-client-deps#master"
   },
   "ignore": [
-    "specs/"
+    "specs/",
+    "./stl-serializer.js"
   ]
 }
