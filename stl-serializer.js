@@ -4,8 +4,8 @@
  */
 var detectEnv = require("composite-detect");
 
-if(detectEnv.isModule) var THREE = require("three");
-
+if(detectEnv.isNode) var THREE = require("three");
+if(detectEnv.isBrowser) var THREE = window.THREE;
 
 STLSerializer = function () {
   this.outputType = "ascii"; //ascii or binary
